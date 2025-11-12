@@ -1,41 +1,213 @@
 <!DOCTYPE html>
-<html>
-   <head>
-      <title>DB Coding Guidelines</title>
-      <style>
-         body { font-family: Arial, sans-serif; margin: 40px; }
-         h1 { color: #2c3e50; }
-         h2 { color: #34495e; }
-         ul { margin-bottom: 30px; }
-         li { margin: 5px 0; }
-      </style>
-   </head>
-   <body>
-      <h1>Database Coding Guidelines</h1>
-      <h2>Stored Procedures</h2>
-      <ul>
-         <li>Include author info, creation date, and description.</li>
-         <li>Use schema prefix (e.g., dbo).</li>
-         <li>Use SET NOCOUNT ON.</li>
-         <li>Use TRY...CATCH for error handling.</li>
-          <li>Object name lenght should not be more than 15 characters</li> 
-      </ul>
-      <h2>Tables</h2>
-      <ul>
-         <li>Use IF NOT EXISTS before creating tables.</li>
-         <li>Include schema prefix.</li>
-         <li>Use appropriate data types and identity columns.</li>
-      </ul>
-      <h2>Views</h2>
-      <ul>
-         <li>Use WITH VIEW_METADATA.</li>
-         <li>Avoid using CTEs.</li>
-         <li>Alias all columns.</li>
-      </ul>
-      <h2>Triggers</h2>
-      <ul>
-         <li>Include Skip Triggers logic.</li>
-         <li>Follow naming conventions (e.g., tICi, tICu).</li>
-      </ul>
-   </body>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Database Coding Guidelines</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      margin: 0;
+    }
+    .sidebar {
+      width: 250px;
+      background-color: #2c3e50;
+      color: white;
+      height: 100vh;
+      padding-top: 20px;
+    }
+    .sidebar a {
+      display: block;
+      padding: 12px 20px;
+      color: white;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .sidebar a:hover {
+      background-color: #34495e;
+    }
+    .content {
+      flex-grow: 1;
+      padding: 20px;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    h2 {
+      color: #2c3e50;
+    }
+    ol {
+      padding-left: 20px;
+    }
+    li {
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="sidebar">
+  <a onclick="showTab('createTable')">Create Table</a>
+  <a onclick="showTab('alterTable')">Alter Table</a>
+  <a onclick="showTab('deleteTable')">Delete Table</a>
+  <a onclick="showTab('storedProcedure')">Stored Procedure</a>
+  <a onclick="showTab('baseline')">Baseline</a>
+  <a onclick="showTab('views')">Views</a>
+</div>
+
+<div class="content">
+  <div id="createTable" class="tab-content active">
+    <h2>Create Table</h2>
+    <ol>
+      <li>Must use if not exists statement before creating a new table.</li>
+      <li>Always prefix table with schema name.</li>
+      <li>Always create table with Identify column (Not applicable for Deleted tables)</li>
+      <li>Always define primary key on identity column with clustered index.</li>
+      <li>Create required foreign keys</li>
+      <li>a</li>
+      <li>Use usp_CreateIndex Sp to created indexes instead of baseline script.</li>
+      <li>Do not create duplicate indexes</li>
+      <li>Use appropriate datatypes. Example: for true/false use BIT instead INT, Use TINYINT if value <255 and not required -ve</li>
+      <li>Use proper length for varchar,nvarchar datatypes. Avoid varchar(max) if possible.</li>
+      <li>Must specify the name for every constraint (PK,FK and Default constraint)</li>
+      <li>Do not create duplicate indexes</li>
+      <li>Table name should not exceed 30 characters.</li>
+      <li>Do not use numbers/spaces in table name</li>
+      <li>Must specific NULL/NOT NULL for every column</li>
+      <li>Always create table in UPPER case</li>
+      <li>Always create deleted table for the transaction table (Not for Process related tables and baseline tables)</li>
+      <li>Main table and Deleted table data types/ column lengths should be same</li>
+      <li>Every table should consists INSERTBY,INSERTDATE,UPDATEBY and UPDATEDATE columns</li>
+      <li>Must specify the description of table and every column using extended properties.</li>
+    </ol>
+  </div>
+
+  <div id="alterTable" class="tab-content">
+    <h2>Alter Table</h2>
+    <ol>
+      <li>Added newly added column in both main table and deleted table</li>
+      <li>Use appropriate datatypes. Example: for true/false use BIT instead INT, Use TINYINT if value <255 and not required -ve</li>
+      <li>Use proper length for varchar,nvarchar datatypes. Avoid varchar(max) if possible.</li>
+      <li>If newly created field is mandatory field, must provide script to populate default values in the column for existing data</li>
+      <li>If required, Add the new created column in IM_TARGETENTITYFIELDs and IM Temp and Archive tables and change the Load SP.</li>
+      <li>Must specify the description of every column using extended properties.</li>
+      <li>If any MDV is associated with table, added newly created columns in MDV.</li>
+      <li>Create indexes if required.</li>
+      <li>Change get/save SPs and SVs</li>
+      <li>Added newly added columns in auditing</li>
+      <li>Add newly added column in ICM_EXPORTMASTERDETAIL and it's child tables.</li>
+      <li>Perform same operations on main table and deleted table</li>
+      <li>Check and modify all child tables columns which are referencing the changed column</li>
+      <li>Identify all database objects which are using the column and modify the length/data type of variables/temp tables.</li>
+      <li>Identify IM database objects which are using the column and modify the length/data type of variables/temp tables.</li>
+      <li>Inform all implementations before deleting column from table.</li>
+      <li>Verify and modify all database objects which are using the column to be deleted.</li>
+      <li>Verify and modify all IM database objects which are using the column to be deleted.</li>
+      <li>Delete the column from both main and _deleted tables.</li>
+    </ol>
+  </div>
+
+  <div id="deleteTable" class="tab-content">
+    <h2>Delete Table</h2>
+    <ol>
+      <li>Inform all implementations before deleting the table.</li>
+      <li>Verify and modify all database objects which are using the table to be deleted.</li>
+      <li>Verify and modify all IM database objects which are using the table to be deleted.</li>
+      <li>Delete deleted table</li>
+    </ol>
+  </div>
+
+  <div id="storedProcedure" class="tab-content">
+    <h2>Stored Procedure</h2>
+    <ol>
+      <li>Must write the name of Author, Creation Date, Usage and Description of the SP at the beginning of SP( Between As and Begin)</li>
+      <li>Must specify Modified By, Modify Date and Purpose after modifying the SP</li>
+      <li>Always prefix SP name with schema name</li>
+      <li>Always provide drop and create scripts while giving the release.</li>
+      <li>In case joining more than one table to get/insert/update/delete, must use alias name for each table and prefix the alias for every column used in the query</li>
+      <li>Do not use INSERT statement without column list</li>
+      <li>Must follow proper indentation while writing code</li>
+      <li>Do not take the script of SP from sp_helptext statement, always modify from the object explorer to avoid formatting</li>
+      <li>While calling child SP/executesql from Parent SP always use Name=value syntax to pass the parameter values.</li>
+      <li>Always use ANSI syntax</li>
+      <li>Give proper meaningful names to parameters and local variable</li>
+      <li>Always prefix parameters with a and local variables with p</li>
+      <li>Write proper comments for complex logic</li>
+      <li>Use proper field in where condition when fetch data from common tables to avoid fetching of huge data.</li>
+      <li>Use Try catch blocks for exception handling.</li>
+      <li>Do not suppress the exception in catch block. Always raise the exception from catch block</li>
+      <li>If we join Integer/date column with VARCHAR field, use explicit convert statement to convert the data to varchar to avoid runtime error.</li>
+      <li>SP name should not exceed 30 charecters</li>
+      <li>Avoid OPENXML statement to read data from XML</li>
+      <li>Use Parameterized dynamic SQL to run the dynamic query and avoid SQL injection</li>
+      <li>If more than one result sets are combined using UNION or UNION ALL operator make sure all the fields should have same data type and length...</li>
+      <li>Do not hard code Item name present in the MTOPTION tables in SPs/Wrokflows. Always use OPTIONCODE.</li>
+      <li>If we convert data from TEXT to XML using FOR XML clause then use the following logic to avoid conversion issue of special characters...</li>
+      <li>Always use LOCAL keyword while declaring cursor</li>
+      <li>Use STATIC/FAST_FORWARD keyword to avoid dynamic cursors</li>
+      <li>CLOSE and DEALLOCATE the cursors at the end</li>
+      <li>Avoid sub queries if possible</li>
+      <li>Avoid functions in where clause if possible</li>
+      <li>Avoid correlated sub queries if possible</li>
+      <li>Do not use Parameters directly in where clause, assign the parameters to local variable and use local variable</li>
+      <li>Avoid cursors if possible</li>
+      <li>Avoid LEFT JOINs if possible</li>
+      <li>Use SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED at the beginning of SP to avoid WITH(NOLOCK) for every select statement</li>
+      <li>Always use SET NOCOUNT ON at the beginning of SP</li>
+      <li>Do not write PRINT statements in SP</li>
+      <li>Use temp table instead of table variable for huge amount of data</li>
+      <li>Create indexes on temp table if necessary</li>
+      <li>Avoid dynamic SQL if possible</li>
+      <li>Use CROSS APPLY/OUTER APPLY instead of functions to avoid performance issues.</li>
+      <li>Give meaningful name for temp tables</li>
+      <li>If SPs are nested then always suffix the temp table name with Short name of SP...</li>
+      <li>Always drop the temp tables at the end of SP</li>
+      <li>Avoid the use of global temp table if possible</li>
+      <li>If any global temp table is used in SP then always create table name/suffix with Unique identifier</li>
+      <li>Always use If exists statement when using global temp table in child SPs to avoid runtime errors</li>
+      <li>Must drop the global temp table at the end of SP</li>
+      <li>Delete data from all child/dependent tables before deleting data from parent table</li>
+      <li>Delete data from UDFIELD table before deleting data from main table</li>
+    </ol>
+  </div>
+
+  <div id="baseline" class="tab-content">
+    <h2>Baseline</h2>
+    <ol>
+      <li>Always use if not exists statement for insert scripts</li>
+    </ol>
+  </div>
+
+  <div id="views" class="tab-content">
+    <h2>Views</h2>
+    <ol>
+      <li>Always use WITH VIEW_METADATA keyword for MDVs</li>
+      <li>Must give alias names for each column in Camel Case</li>
+      <li>Avoid CTEs in MDV to avoid performance issues</li>
+      <li>Use WITH (NOLOCK) statement for every table</li>
+      <li>Must specify Alias name for every table and use prefix every column with Alias name</li>
+      <li>MDV Name should not exceed 30 charecters</li>
+      <li>Must write the name of Author, Creation Date and Description of the MDV</li>
+      <li>Must specify Modified By, Modify Date and Purpose after modifying the MDV</li>
+      <li>All Base MDVs consists all the columns present in the underlying table.</li>
+      <li>If we have any IDs in base table which are referring the other table then, in MDV we should have name/code of the referred tables.</li>
+      <li>Use the proper aliases for each table used in MDV and every column should be prefixed with the Alias name.</li>
+      <li>If we have any bit/Boolean field in table then, in MDV add a new column and write case statement to display “Yes” and “No” along with regular field.</li>
+      <li>Give user friendly name for the every column of the MDV.</li>
+    </ol>
+  </div>
+</div>
+
+<script>
+  function showTab(tabId) {
+    const tabs = document.querySelectorAll('.tab-content');
+    tabs.forEach(tab => tab.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+  }
+</script>
+
+</body>
 </html>
